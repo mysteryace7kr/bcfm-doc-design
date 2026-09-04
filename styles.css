@@ -1,0 +1,48 @@
+/* 인쇄문서 디자인 시스템 — 토큰 시트
+   각 .dc.html의 <helmet> :root 블록과 같은 값이다.
+   값을 바꿀 때는 이 파일과 해당 컴포넌트의 :root를 함께 고친다. */
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+
+:root{
+  /* 잉크 — 본문 위계 */
+  --ink:        #1c1d20;  /* 본문 */
+  --ink-strong: #141619;  /* 제목 · ⇨ 결과 · <strong> */
+  --ink-mid:    #2a2b2e;  /* 표 라벨 · 인용문 · ▶ 부연 */
+  --ink-soft:   #63656a;  /* 보조 텍스트 */
+  --muted:      #8b8880;  /* 푸터 · 용도표기 · ※ 참고 */
+
+  /* 음영 */
+  --band:       #f6f4ef;  /* 요약밴드 · 표 라벨열 */
+
+  /* 괘선 */
+  --rule:        #dcd7cd; /* 표 테두리 */
+  --rule-soft:   #e2ddd3; /* 밴드 상하선 */
+  --rule-strong: #cec9be; /* h2 밑줄 */
+  --rule-hair:   #ddd8ce; /* 푸터 라인 */
+
+  /* 링크 — 이 시스템의 유일한 유채색 */
+  --link:       #2c4a6e;
+  --link-hover: #16324f;
+
+  /* 서체 — 제목·본문 모두 고딕 하나로 통일 (§8.2)
+     Serif는 쓰지 않는다. fonts/ 의 Serif TTF는 보존만 되어 있다. */
+  --sans: 'Noto Sans KR','Apple SD Gothic Neo',sans-serif; /* @kind font */
+
+  /* 본문 조판 — 컴포넌트 속성 패널에서 조절한다 (§8.2)
+     report·brief 14px / 1.85  (12.5~15.5 · 1.70~2.00)
+     formal      13.5px / 1.75 (12.0~15.0 · 1.60~1.90) */
+  --body-fs: 14px;
+  --body-lh: 1.85; /* @kind other */
+
+  /* 자간 */
+  --track-body: -0.015em;
+  --track-h1:   -0.03em;
+  --track-h2:   -0.02em;
+  --track-h3:   -0.02em;
+
+  /* 지면 — 상 / 좌우 / 하 (§8.4) */
+  --page-pad-top:    19mm;
+  --page-pad-side:   20mm;
+  --page-pad-bottom: 14mm;
+}

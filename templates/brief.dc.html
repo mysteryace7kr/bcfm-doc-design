@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="업무진행사항" description="주간·수시 업무진행 보고용 항목별 간략 서식 뼈대" -->
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  /* 조판 변수 등록 — 속성 패널 바인딩(bodyFs·bodyLh)이 해결되지 않아
+     `--body-fs: px` 같은 무효값이 들어와도 var() 폴백은 발동하지 않고
+     상속값(16px/normal)으로 튄다. @property의 initial-value가 그때
+     본래 기본값으로 되돌려 준다. */
+  @property --body-fs { syntax:'<length>'; inherits:true; initial-value:14px; }
+  @property --body-lh { syntax:'<number>'; inherits:true; initial-value:1.85; }
+  :root{
+    --ink:#1c1d20; --ink-strong:#141619; --ink-mid:#2a2b2e; --ink-soft:#63656a;
+    --muted:#8b8880;
+    --band:#f6f4ef;
+    --rule:#dcd7cd; --rule-soft:#e2ddd3; --rule-strong:#cec9be; --rule-hair:#ddd8ce;
+    --link:#2c4a6e; --link-hover:#16324f;
+    --sans:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;
+  }
+  html{ font-family:var(--sans); }
+  body{ margin:0; }
+  doc-page:not(:defined){ visibility:hidden; }
+  doc-page{ font-family:var(--sans); font-size:var(--body-fs,14px); line-height:var(--body-lh,1.85);
+            color:var(--ink); letter-spacing:-0.015em; }
+  a{ color:var(--link); } a:hover{ color:var(--link-hover); }
+
+  /* ── 지면 — 한 section.page = A4 한 장 (§8.4) ───── */
+  .page{ padding:19mm 20mm 14mm; box-sizing:border-box;
+         display:flex; flex-direction:column; }
+  .body{ flex:1; min-height:0; }
+
+  /* ── 표제 위계 (§8.3) ───────────────────────────── */
+  .kicker{ font-size:10.5px; font-weight:500; letter-spacing:0.34em; color:var(--muted); text-align:center; }
+  h1{ margin:13px 0 0; font-size:25px; font-weight:700; letter-spacing:-0.03em;
+      line-height:1.34; text-align:center; color:var(--ink-strong); text-wrap:balance; }
+  .rule86{ margin:15px auto 0; width:86px; border-top:2px solid var(--ink-strong); }
+  h2{ margin:26px 0 11px; padding-bottom:6px; border-bottom:1px solid var(--rule-strong);
+      font-size:17px; font-weight:700; letter-spacing:-0.02em; color:var(--ink-strong); }
+  h3{ margin:20px 0 8px; font-size:15px; font-weight:700; letter-spacing:-0.02em; color:var(--ink-strong); }
+
+  /* ── 개조식 기호 위계 (○ ▶ ※ ⇨ / 가.나.다.) ───── */
+  .o,.t,.n,.r,.k{ margin:0 0 .34em; word-break:keep-all; text-align:justify; orphans:2; widows:2; }
+  .o{ padding-left:1.15em; text-indent:-1.15em; color:var(--ink); }
+  .k{ padding-left:2.45em; text-indent:-1.25em; color:var(--ink); }
+  .t{ padding-left:2.45em; text-indent:-1.25em; color:var(--ink-mid); font-size:calc(var(--body-fs,14px)*.94); }
+  .n{ padding-left:2.45em; text-indent:-1.25em; color:var(--muted); font-size:calc(var(--body-fs,14px)*.88); }
+  .r{ margin-top:.5em; padding-left:1.3em; text-indent:-1.3em;
+      color:var(--ink-strong); font-weight:700; }
+  .lead{ margin:0 0 .7em; text-align:justify; word-break:keep-all; orphans:2; widows:2; }
+
+  /* ── 블록 ────────────────────────────────────────── */
+  .band{ margin:19px 0 4px; padding:11px 15px 12px; background:var(--band);
+         border-top:1px solid var(--rule-soft); border-bottom:1px solid var(--rule-soft); }
+  .quote{ margin:.7em 0 1em; padding:11px 15px; background:var(--band);
+          border-top:1px solid var(--rule-soft); border-bottom:1px solid var(--rule-soft);
+          font-size:calc(var(--body-fs,14px)*.92); line-height:1.8; word-break:keep-all;
+          text-align:justify; color:var(--ink-mid); }
+  table{ width:100%; border-collapse:collapse; font-size:calc(var(--body-fs,14px)*.92);
+         line-height:1.7; color:var(--ink); margin:6px 0 4px; }
+  th,td{ padding:7px 10px; border:0.8px solid var(--rule); vertical-align:top; word-break:keep-all; }
+  th{ background:var(--band); font-size:calc(var(--body-fs,14px)*.85); font-weight:700;
+      text-align:left; color:var(--ink-mid); }
+  td.num{ text-align:right; }
+  thead th{ text-align:center; }
+
+  /* ── 푸터 — 각 페이지 안에 직접 넣는다 (§8.3) ────── */
+  .foot{ display:flex; justify-content:space-between; align-items:baseline; padding-top:6px;
+         border-top:0.6px solid var(--rule-hair); font-size:9.5px; letter-spacing:0.02em;
+         color:var(--muted); }
+  strong{ font-weight:700; color:var(--ink-strong); }
+</style>
+<script src="./doc-page.js"></script>
+</helmet>
+
+<doc-page size="a4" margin="0" style="--body-fs: {{ bodyFs }}px; --body-lh: {{ bodyLh }}">
+
+<section class="page">
+ <div class="body">
+  <div class="kicker">[기준일] 기준</div>
+  <h1>업무진행사항</h1>
+  <div class="rule86"></div>
+
+  <div class="band">
+    <p class="r" style="margin:0">⇨ 진행 [n]건 · 완료 [n]건 · 대기 [n]건 — <strong>[가장 중요한 건]</strong>이 후속 일정의 선행조건</p>
+  </div>
+
+  <h2>1. [업무명]</h2>
+  <p class="o">○ [일자] [내용]  [담당 · 상태]</p>
+  <p class="o">○ [일자] [내용]  [담당 · 상태]</p>
+  <p class="t">▶ [부연이 필요한 경우]</p>
+
+  <h2>2. [업무명]</h2>
+  <p class="o">○ [일자] [내용]  [담당 · 상태]</p>
+  <p class="n">※ [근거·기한 등 참고사항]</p>
+
+  <h2>3. 차주 예정</h2>
+  <table>
+    <thead><tr><th style="width:24%">일자</th><th>내용</th><th style="width:22%">담당</th></tr></thead>
+    <tbody>
+      <tr><td>[일자]</td><td>[내용]</td><td style="text-align:center">[담당]</td></tr>
+      <tr><td>[일자]</td><td>[내용]</td><td style="text-align:center">[담당]</td></tr>
+    </tbody>
+  </table>
+ </div>
+  <div class="foot"><span>[문서명]</span><span>1 / 1</span></div>
+</section>
+</doc-page>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;bodySize&quot;: {&quot;editor&quot;: &quot;range&quot;, &quot;default&quot;: 14, &quot;min&quot;: 12.5, &quot;max&quot;: 15.5, &quot;step&quot;: 0.5, &quot;unit&quot;: &quot;px&quot;, &quot;tsType&quot;: &quot;number&quot;, &quot;section&quot;: &quot;조판&quot;},
+  &quot;lineSpacing&quot;: {&quot;editor&quot;: &quot;range&quot;, &quot;default&quot;: 1.85, &quot;min&quot;: 1.7, &quot;max&quot;: 2.0, &quot;step&quot;: 0.05, &quot;tsType&quot;: &quot;number&quot;, &quot;section&quot;: &quot;조판&quot;}
+}">
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      bodyFs: this.props.bodySize ?? 14,
+      bodyLh: this.props.lineSpacing ?? 1.85,
+    };
+  }
+}
+</script>
+</body>
+</html>
