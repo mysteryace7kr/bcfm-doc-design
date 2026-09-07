@@ -97,14 +97,41 @@
 ## 파일
 
 ```
-templates/   서식 3종 (.dc.html) — 등록·사용 대상
+templates/   서식 3종 (.dc.html) — 이 저장소의 원본
 runtime/     doc-page.js · support.js — 지면 분할 런타임 (로컬 미리보기용)
 styles.css   토큰 시트 — 각 서식의 :root 와 같은 값
 STYLE.md     색·서체·간격·위계 상세 사양
+docs/
+  SKILL.md          Claude Code 스킬 `doc-design` 본문
+  design-readme.md  Claude Design 프로젝트에 올라가는 readme
+sync/
+  to-skill.sh       원본 → ~/.claude/skills/doc-design/
+  build-design.sh   원본 → build/design/ (Claude Design 업로드본)
+  fontswap.py       폰트 참조 치환 (build-design.sh 가 부른다)
+  check.sh          사본이 어긋났는지 점검
+  README.md         동기화 절차
 ```
 
 `runtime/`의 두 파일은 Claude Design이 제공하는 런타임이며 이 저장소에서
 수정하지 않는다.
+
+git 에 올리지 않는 것 (`.gitignore`):
+
+- `build/` — `sync/build-design.sh` 가 만드는 생성물
+- `notes/` — 사내 작업메모 사본. 원본은 옵시디언 볼트 `00_수집/` 에 있다
+
+## 원본은 여기 하나다
+
+스킬 폴더도 Claude Design 프로젝트도 **사본**이다. 사본을 직접 고치면 다음
+동기화 때 덮어써진다. 고칠 일이 생기면 이 저장소를 고치고 `sync/` 를 돌린다.
+
+```bash
+./sync/check.sh          # 지금 뭐가 어긋나 있는지
+./sync/to-skill.sh       # 스킬 폴더 갱신
+./sync/build-design.sh   # Claude Design 업로드본 생성
+```
+
+절차와 주의사항은 [`sync/README.md`](sync/README.md).
 
 ## 라이선스
 
