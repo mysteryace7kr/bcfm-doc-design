@@ -16,11 +16,17 @@ targets=()
 if [ $# -gt 0 ]; then
   for a in "$@"; do targets+=("$(cd "$(dirname "$a")" && pwd)/$(basename "$a")"); done
 else
-  for n in report formal brief; do targets+=("$SRC/templates/$n.dc.html"); done
+  for n in report formal brief; do
+    if [ -f "$SRC/templates/$n.dc.html" ]; then targets+=("$SRC/templates/$n.dc.html")
+    else targets+=("$SRC/components/$n.dc.html"); fi
+  done
 fi
 
 WORK="$(mktemp -d)"
-cp "$SRC/runtime/"*.js "$SRC/sync/measure-probe.js" "$WORK/"
+# 저장소는 runtime/ 에, 스킬 폴더 사본은 components/ 에 런타임을 둔다.
+if [ -d "$SRC/runtime" ]; then cp "$SRC/runtime/"*.js "$WORK/";
+else cp "$SRC/components/doc-page.js" "$SRC/components/support.js" "$WORK/"; fi
+cp "$SRC/sync/measure-probe.js" "$WORK/"
 
 PORT="$(python3 -c 'import socket;s=socket.socket();s.bind(("127.0.0.1",0));print(s.getsockname()[1]);s.close()')"
 (cd "$WORK" && exec python3 -m http.server "$PORT" --bind 127.0.0.1 >/dev/null 2>&1) &
@@ -37,7 +43,11 @@ for t in "${targets[@]}"; do
 import sys
 src, dst = sys.argv[1], sys.argv[2]
 html = open(src, encoding="utf-8").read()
-tag = '<script src="./measure-probe.js"></script>\n'
+# 화면의 .page 는 시트 폭을 따라가지만 인쇄에서는 210×297mm 로 못박힌다.
+# 창 크기에 따라 줄바꿈이 달라지지 않도록 재는 동안 인쇄 크기로 고정한다.
+tag = ('<style>doc-page > section.page{width:210mm!important;'
+       'height:297mm!important;aspect-ratio:auto!important}</style>\n'
+       '<script src="./measure-probe.js"></script>\n')
 if "</body>" in html:
     html = html.replace("</body>", tag + "</body>", 1)
 else:
