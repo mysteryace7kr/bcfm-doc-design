@@ -65,7 +65,22 @@ DesignSync 는 `list_files` → `finalize_plan` → `write_files` 순서로 돈�
 | `_ds_manifest.json` · `_ds_bundle.js` | 앱이 자체 점검으로 생성한다 |
 | `.thumbnail` · `thumbnail.html` | 앱이 만든 미리보기 |
 
-올릴 것은 `readme.md` · `styles.css` · `templates/{report,formal,brief}/*` 뿐이다.
+올릴 것은 `readme.md` · `styles.css` · `templates/{report,formal,brief}/*` 뿐이고,
+그중에서도 **실제로 바뀐 것만 올린다.** 올리기 전에 `get_file` 로 원격본을 읽어
+`build/design/` 과 대조한다 — 누군가 Claude Design 편집기에서 손댔을 수 있고,
+그걸 모르고 덮어쓰면 그 수정이 조용히 사라진다.
+
+## 폰트 참조는 두 파일에서 바뀐다
+
+`.dc.html` 만 치환하면 안 된다. `styles.css` 도 폰트 참조가 다르고, 경로도 다르다.
+
+| 파일 | 저장소본 | Claude Design본 |
+|---|---|---|
+| `templates/*.dc.html` | `<link>` 3줄 | `@font-face` … `../../fonts/…` |
+| `styles.css` | `@import url(…)` | `@font-face` … `fonts/…` |
+
+`.dc.html` 은 `templates/<이름>/` 안에, `styles.css` 는 프로젝트 루트에 놓이므로
+`fonts/` 로 올라가는 깊이가 다르다. `fontswap.py` 가 확장자를 보고 갈라 처리한다.
 
 ## 왜 변형이 두 종류인가
 
