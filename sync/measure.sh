@@ -44,8 +44,14 @@ else:
     html += tag
 open(dst, "w", encoding="utf-8").write(html)
 PY
-  dom="$("$CHROME" --headless --disable-gpu --no-sandbox --hide-scrollbars \
-        --window-size=1400,2400 --force-device-scale-factor=1 \
-        --virtual-time-budget=8000 --dump-dom "http://127.0.0.1:$PORT/$name" 2>/dev/null)"
+  # 웹폰트를 네트워크에서 받는 사이 렌더가 늦어 프로브가 빈손으로 끝나는
+  # 경우가 있다. 결과가 없으면 다시 잰다.
+  dom=""
+  for attempt in 1 2 3; do
+    dom="$("$CHROME" --headless --disable-gpu --no-sandbox --hide-scrollbars \
+          --window-size=1400,2400 --force-device-scale-factor=1 \
+          --virtual-time-budget=15000 --dump-dom "http://127.0.0.1:$PORT/$name" 2>/dev/null)"
+    case "$dom" in *'id="__measure"'*) break ;; esac
+  done
   echo "$dom" | python3 "$SRC/sync/measure-report.py" "$name" || true
 done

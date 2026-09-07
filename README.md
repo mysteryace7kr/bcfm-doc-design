@@ -10,7 +10,7 @@
 
 | 파일 | 쓸 때 | 기본 |
 |---|---|---|
-| `templates/report.dc.html` | 여러 쪽, 개조식 위계 + 요약밴드 + 번호 섹션 — 보고서·검토 | 2쪽 |
+| `templates/report.dc.html` | 여러 쪽, 개조식 위계 + 요약밴드 + 번호 섹션 — 보고서·검토 | 1쪽 |
 | `templates/formal.dc.html` | 수신처·발신명의가 필요한 문서 — 기안(공문)·건의서·질의서. 결재란 포함 | 1쪽 |
 | `templates/brief.dc.html` | 1~2쪽, 타임라인·항목 나열 — 업무진행사항·요약보고 | 1쪽 |
 
@@ -38,7 +38,7 @@
     <div class="body"> … 내용 … </div>
     <div class="foot"><span>문서명</span><span>1 / 2</span></div>
   </section>
-  <section class="page"> … 2쪽 … </section>
+  <section class="page"> … 2쪽 … </section>   <!-- 쪽을 늘리려면 이렇게 -->
 </doc-page>
 ```
 
