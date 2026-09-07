@@ -35,10 +35,14 @@
             color:var(--ink); letter-spacing:-0.015em; }
   a{ color:var(--link); } a:hover{ color:var(--link-hover); }
 
-  /* ── 지면 — 한 section.page = A4 한 장 (§8.4) ───── */
-  .page{ padding:19mm 20mm 14mm; box-sizing:border-box;
-         display:flex; flex-direction:column; }
-  .body{ flex:1; min-height:0; }
+  /* ── 지면 — 흐름 문서. 쪽은 브라우저 인쇄 엔진이 나눈다 ───────────
+     원고를 그냥 부으면 된다. 쪽을 손으로 나누지 않는다.
+     여백은 doc-page 의 margin 속성이 소유한다. */
+  /* 쪽 넘김 위생 — 제목은 뒤 내용과 붙이고, 덩어리는 쪼개지 않는다 */
+  h1,h2,h3{ break-after:avoid; }
+  .band,.quote{ break-inside:avoid; }
+  tr,img{ break-inside:avoid; }
+  .o,.k,.t,.n,.r,.lead{ orphans:2; widows:2; }
 
   /* ── 표제 위계 (§8.3) ───────────────────────────── */
   .kicker{ font-size:10.5px; font-weight:500; letter-spacing:0.34em; color:var(--muted); text-align:center; }
@@ -83,10 +87,7 @@
 <script src="./doc-page.js"></script>
 </helmet>
 
-<doc-page size="a4" margin="0" style="--body-fs: {{ bodyFs }}px; --body-lh: {{ bodyLh }}">
-
-<section class="page">
- <div class="body">
+<doc-page size="a4" margin="20mm" style="--body-fs: {{ bodyFs }}px; --body-lh: {{ bodyLh }}">
   <div class="kicker">[수신기관] 귀중</div>
   <h1>[제목]</h1>
   <div class="rule86"></div>
@@ -119,9 +120,8 @@
     <div style="margin-top:6px;font-size:12px;color:var(--muted)">[주소] &nbsp;·&nbsp; 전화 [번호]</div>
     <div style="margin-top:4px;font-size:12px;color:var(--muted)">[문서번호] &nbsp;·&nbsp; [시행일] 시행</div>
   </div>
- </div>
-  <div class="foot"><span>[문서명]</span><span>1 / 1</span></div>
-</section>
+
+<div slot="footer" class="foot"><span>[문서명]</span><span>부산공동어시장</span></div>
 </doc-page>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{

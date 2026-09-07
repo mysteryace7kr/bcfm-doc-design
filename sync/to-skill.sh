@@ -18,7 +18,8 @@ cp "$SRC/runtime/"*.js           "$DST/components/"
 # 런타임은 components/ 에서 찾고, 글꼴 캐시는 스킬 폴더 안에 따로 받는다.
 cp "$SRC/sync/fit.py" "$SRC/sync/fit.sh" "$SRC/sync/fit-probe.js" \
    "$SRC/sync/measure.sh" "$SRC/sync/measure-probe.js" "$SRC/sync/measure-report.py" \
-   "$SRC/sync/topdf.py" "$SRC/sync/topdf.sh" "$SRC/sync/fontcache.sh" "$DST/sync/"
+   "$SRC/sync/topdf.py" "$SRC/sync/topdf.sh" "$SRC/sync/fontcache.sh" \
+   "$SRC/sync/checkpdf.py" "$SRC/sync/checkpdf.sh" "$DST/sync/"
 chmod +x "$DST/sync/"*.sh
 
 echo "스킬 폴더 갱신 완료 → $DST"
