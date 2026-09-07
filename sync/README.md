@@ -29,6 +29,25 @@
 git add -A && git commit && git push
 ```
 
+## 채움률 측정
+
+```bash
+./sync/measure.sh                    # 서식 3종 전부
+./sync/measure.sh 내문서.dc.html      # 특정 파일
+```
+
+헤드리스 크롬으로 실제 렌더한 뒤 쪽별 채움률을 잰다. npm 의존성은 없다.
+
+`.page` 는 `width:100%` + `aspect-ratio` 라 **시트 폭에 따라 지면 크기가 변한다.**
+창이 좁으면 지면이 축소돼 채움률이 실제보다 높게 나온다 — `measure.sh` 가
+`--window-size=1400,2400` 을 주는 이유다. 직접 브라우저로 잴 때도 창을 충분히 넓혀야 한다.
+
+`file://` 로는 `<x-dc>` 런타임이 돌지 않아 로컬 http 서버를 잠깐 띄웠다 끈다.
+
+**채움률은 자동으로 맞춰지지 않는다.** 지면은 고정된 A4 상자이고 `.body{flex:1}` 이
+푸터를 바닥으로 밀 뿐이다. 원고 분량으로 맞추는 수밖에 없다. 기준값은 `STYLE.md`
+「한 쪽에 들어가는 분량」에 있다.
+
 ## Claude Design 업로드
 
 `build/design/` 을 만든 뒤 Claude Code 에게 이렇게 시킨다.
