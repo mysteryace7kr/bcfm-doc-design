@@ -445,6 +445,29 @@ def refit(pr, doc, blocks_html, fs, lh, avail, rounds=6, quiet=False):
     return blocks_html, made
 
 
+# ── 합격 기준 ───────────────────────────────────────────────────────────
+# 문서 하나가 "제대로 조판됐다"고 말할 수 있는 조건. 이걸 통과하지 못하면
+# 사람이 봐야 한다 — 도구가 더 할 수 있는 게 없다는 뜻이다.
+MIN_FILL = 0.92        # 마지막 쪽을 뺀 모든 쪽
+MIN_BODY_PX = 13.0     # 인쇄해서 읽는 문서의 하한
+
+
+def judge(pages, fs):
+    """합격이면 빈 목록, 아니면 걸린 까닭들."""
+    why = []
+    over = [p["page"] for p in pages if p["usedPx"] > p["availPx"] + EPS]
+    if over:
+        why.append(f"{', '.join(map(str, over))}쪽이 넘쳐 잘린다 — 한 블록이 한 쪽보다 크다")
+    loose = [p["page"] for p in pages[:-1] if p["fillPct"] < MIN_FILL * 100]
+    if loose:
+        why.append(f"{', '.join(map(str, loose))}쪽이 {MIN_FILL*100:.0f}% 미만 — "
+                   f"나눌 수 없는 표·제목 덩어리가 걸렸다. 그 자리를 사람이 본다")
+    if fs < MIN_BODY_PX:
+        why.append(f"본문 {fs:g}px — {MIN_BODY_PX:g}px 아래로 줄여야 들어간다는 것은 "
+                   f"원고가 긴 것이다. 원고를 줄이거나 쪽수를 늘린다")
+    return why
+
+
 def verdict(pct, over):
     if over:
         return "★ 넘침"
@@ -668,8 +691,16 @@ def main():
 
         if before["pageCount"] != after["pageCount"]:
             print(f"\n  쪽수 {before['pageCount']} → {after['pageCount']}")
-        if any(p["usedPx"] > p["availPx"] + EPS for p in after["pages"]):
-            print("\n  ★ 아직 넘치는 쪽이 있다. 한 블록이 한 쪽보다 크다는 뜻이다.")
+
+        # 합격 기준 — 통과 못 하면 사람이 볼 자리를 짚어 준다
+        why = judge(after["pages"], fs)
+        if why:
+            print("\n  ✗ 불합격")
+            for w in why:
+                print(f"    · {w}")
+        else:
+            print(f"\n  ✓ 합격 — 잘린 쪽 없음 / 마지막 쪽 뺀 모든 쪽 "
+                  f"{MIN_FILL*100:.0f}% 이상 / 본문 {fs:g}px / 글자 그대로")
 
         if dry:
             print("\n  --dry 라 파일은 그대로 두었다.")
