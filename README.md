@@ -20,45 +20,43 @@
 
 ## 쓰는 법
 
-**브라우저에서 바로 보기** — `templates/report.dc.html`을 열면 된다.
-폰트를 Google Fonts에서 불러오므로 인터넷만 되면 따로 준비할 게 없다.
-(`runtime/`의 두 파일은 같은 폴더에 있어야 하므로, 로컬 미리보기 시에는
-템플릿을 `runtime/` 옆에 두거나 경로를 맞춰야 한다.)
+검토한 Markdown 원고를 `templates/`의 해당 서식에 의미 단위로 옮긴다.
+이 저장소에는 Markdown 파서가 없으므로 변환은 작성 에이전트가 수행한다.
+제목·문단·표의 순서와 글자를 확인한 뒤 PDF를 만든다.
 
-**Claude Design에 등록** — `templates/`의 `.dc.html` 3개를 올린다.
-`runtime/`은 로컬 미리보기용이라 등록에는 필요 없다.
-
-## 지면 — 이 시스템의 핵심
-
-`<section class="page">` **하나가 A4 한 쪽**이다.
-
-```html
-<doc-page size="a4" margin="0">
-  <section class="page">
-    <div class="body"> … 내용 … </div>
-    <div class="foot"><span>문서명</span><span>1 / 2</span></div>
-  </section>
-  <section class="page"> … 2쪽 … </section>   <!-- 쪽을 늘리려면 이렇게 -->
-</doc-page>
+```bash
+./sync/fontcache.sh
+./sync/topdf.sh 내문서.dc.html 결과.pdf
+./sync/checkpdf.sh 내문서.dc.html
 ```
 
-이 구조라서:
+현재 PDF 도구는 macOS의 Google Chrome, Python 3, 측정 시 Poppler를 사용한다.
+로컬 Noto TTF를 쓰지만 `support.js`의 React CDN은 인터넷 연결이 필요하다.
+`topdf.sh`는 고정 대기 시간 방식이므로 PDF 생성 성공과 내용 렌더 완료는 다르다.
+반드시 결과를 열어 확인한다.
 
-- **편집 화면에 한 쪽이 카드 하나로 보인다.** 화면에서 본 그대로 인쇄된다.
-- **A4가 못박힌다** — `doc-page.js`가 `@page { size: 210mm 297mm }`를 주입한다.
-  내보내기 대화상자에서 무엇을 고르든 쪽수와 구성이 변하지 않는다.
-- **쪽 번호를 쓸 수 있다.** 푸터에 직접 적는다.
+원본 템플릿을 그대로 더블클릭하면 `./support.js`·`./doc-page.js` 경로가 맞지 않는다.
+브라우저 미리보기에는 템플릿과 `runtime/`의 두 파일을 같은 디렉터리에 복사하고
+그 디렉터리를 로컬 HTTP 서버로 제공한다. 폰트 로드 뒤 확인한다.
 
-### 쪽을 늘리려면
+Claude Design 업로드본은 `./sync/build-design.sh`로 만든다.
+`build/design/`은 앱이 보유한 `fonts/`를 참조하므로 독립 실행 패키지가 아니다.
+업로드·스킬 설치는 [동기화 절차](sync/README.md)를 따른다.
 
-`<section class="page">` 블록을 통째로 복사해 붙이고 푸터의 `n / N`만 고친다.
-**쪽수 제한은 없다.**
+## 지면 — 흐름 문서 한 가지
 
-### 넘치면 잘린다 — 대신 화면에 보인다
+세 서식은 `<doc-page size="a4" margin="20mm">` 안에 내용을 이어 쓰는 흐름 문서다.
+`section.page`를 만들거나 고정 쪽 방식을 섞지 않는다.
+푸터는 `slot="footer"`에 한 번 넣고 매 쪽 반복한다.
 
-한 쪽에 내용이 넘치면 다음 쪽으로 흘러가지 않고 **잘린다**(`overflow:hidden`).
-내용을 줄이라는 뜻이 아니라 **쪽을 하나 더 만들라는 뜻**이다.
-잘린 것은 편집 화면 카드에 그대로 보인다 — 카드가 곧 인쇄될 종이다.
+화면은 A4 폭의 긴 시트이고 실제 쪽 경계는 PDF에서 확인한다.
+BCFM 템플릿의 `@page { size:A4 }`가 용지를, 런타임이 여백을 맡는다.
+브라우저 인쇄에서도 A4·배율 100%·머리글/바닥글 해제를 확인한다.
+여백을 `@page`에 다시 추가하면 런타임 여백과 중복된다.
+
+긴 문단·표·인용문은 다음 쪽으로 흐른다. 짧은 요약밴드·카드·결재·서명만 유지한다.
+긴 카드에는 `allow-split`을 사용한다. 한 쪽보다 큰 행이나 강제 높이·숨김은
+여전히 잘림을 만들 수 있으므로 '흐름이면 무조건 안전'이라고 판단하지 않는다.
 
 ## 조판
 
@@ -67,7 +65,7 @@
 | report · brief | 14px (12.5~15.5) | 1.85 (1.70~2.00) |
 | formal | 13.5px (12.0~15.0) | 1.75 (1.60~1.90) |
 
-여백 19 / 20 / 14mm (상 / 좌우 / 하), 자간 −0.015em,
+흐름 서식의 기본 여백 20mm (상하좌우), 자간 −0.015em,
 `text-align:justify` + `word-break:keep-all`.
 서체는 **Noto Sans KR 하나** — 제목도 고딕이다.
 
@@ -75,7 +73,7 @@
 
 이 세 줄은 지우면 조용히 깨진다.
 
-- **`<doc-page>`의 `size="a4"`** — 화면 카드 크기와 인쇄 용지를 동시에 정한다
+- **`<doc-page>`의 `size="a4"`** — 화면 폭을 정한다. 인쇄 A4는 템플릿의 `@page`가 맡는다
 - **`<style>` 맨 위의 `@property --body-fs` / `--body-lh`** — 속성 패널 값이 전달되지
   않는 렌더 경로에서 `--body-fs: px` 같은 무효값이 들어가는데, 이때
   `var(--body-fs, 14px)`의 폴백은 발동하지 않는다(변수가 *없는* 게 아니라 *무효*라서).
@@ -87,9 +85,8 @@
 
 그 밖에:
 
-- `@page` 규칙을 직접 쓰지 않는다 — `doc-page.js`가 소유한다
-- 푸터를 `slot="footer"`로 옮기지 않는다 — `section.page`와 혼용이 금지돼 있고,
-  옮기면 쪽 번호를 쓸 수 없다
+- 템플릿의 `@page { size:A4 }`를 유지하고 여백은 런타임에 맡긴다
+- 푸터는 `slot="footer"`를 유지한다. 현 구현은 문서명·기관명을 반복한다
 - 링크 외 유채색을 넣지 않는다
 - `▢`는 쓰지 않는다 — 글리프가 없어 `□`로 폴백된다
 - 색·크기를 인라인으로 새로 쓰지 말고 `var(--토큰)`을 쓴다
@@ -132,7 +129,7 @@ git 에 올리지 않는 것 (`.gitignore`):
 ./sync/check.sh          # 지금 뭐가 어긋나 있는지
 ./sync/to-skill.sh       # 스킬 폴더 갱신
 ./sync/build-design.sh   # Claude Design 업로드본 생성
-./sync/measure.sh        # 쪽별 채움률 측정
+./sync/checkpdf.sh 내문서.dc.html  # 흐름 문서의 참고 측정
 ```
 
 절차와 주의사항은 [`sync/README.md`](sync/README.md).

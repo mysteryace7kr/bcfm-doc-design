@@ -10,6 +10,7 @@ mkdir -p "$DST/components"
 
 mkdir -p "$DST/sync"
 
+cp "$SRC/sync/README.md"         "$DST/sync/README.md"
 cp "$SRC/docs/SKILL.md"          "$DST/SKILL.md"
 cp "$SRC/STYLE.md"               "$DST/STYLE.md"
 cp "$SRC/templates/"*.dc.html    "$DST/components/"

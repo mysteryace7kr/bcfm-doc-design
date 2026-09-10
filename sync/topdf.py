@@ -4,14 +4,16 @@
     ./sync/topdf.sh 내문서.dc.html            옆에 같은 이름 .pdf 를 만든다
     ./sync/topdf.sh 내문서.dc.html 결과.pdf
 
-fit.sh 와 같은 조건(로컬 Noto TTF · 210×297mm)에서 렌더하므로, 나온 PDF 의
-쪽수와 잘림 여부가 fit.sh 가 보고한 것과 일치해야 한다. 어긋나면 둘 중 하나가
-틀린 것이니 그대로 두지 말 것.
+로컬 Noto TTF와 A4를 사용하는 확인용 출력이다. 흐름 문서의 쪽 경계는 PDF에서
+확인한다. 이전 고정 쪽 전용 fit.sh의 DOM 측정과 자동으로 같다고 가정하지 않는다.
+고정 시간 대기 방식이므로 파일 생성 성공만으로 폰트·내용 렌더 완료를 보장하지 않는다.
 """
 import os
+from pathlib import Path
 import re
 import subprocess
 import sys
+import tempfile
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from fit import CHROME, Prober  # noqa: E402
@@ -27,23 +29,29 @@ def main():
 
     pr = Prober(repo)
     try:
-        html = open(src, encoding="utf-8").read()
+        html = Path(src).read_text(encoding="utf-8")
         html = re.sub(r'<link[^>]*fonts\.(?:googleapis|gstatic)\.com[^>]*>', "", html)
-        # 흐름 문서는 용지를 못 박지 않는다 — 인쇄 대화상자의 용지를 따른다.
-        # 헤드리스 크롬은 기본이 Letter(A4보다 18mm 짧다)라 그대로 뽑으면
-        # 쪽수가 실제와 달라진다. 확인용 PDF 는 A4 로 고정해 뽑는다.
+        # 새 BCFM 템플릿은 A4를 선언한다. 구버전 문서도 동일 조건으로 확인하도록
+        # 출력 도구에서 A4를 지정한다. 여백은 런타임이 소유한다.
         tag = "<style>@page{size:A4}</style>\n" + pr.local_fonts()
         html = html.replace("</body>", tag + "</body>", 1) if "</body>" in html else html + tag
         name = "__pdf__.dc.html"
         with open(os.path.join(pr.work, name), "w", encoding="utf-8") as f:
             f.write(html)
-        r = subprocess.run(
-            [CHROME, "--headless", "--disable-gpu", "--no-sandbox",
-             "--virtual-time-budget=25000", "--no-pdf-header-footer",
-             f"--print-to-pdf={out}", f"http://127.0.0.1:{pr.port}/{name}"],
-            capture_output=True, text=True)
-        if not os.path.exists(out):
-            raise SystemExit("PDF 를 못 만들었다:\n" + r.stderr[-800:])
+        # 기존 PDF를 성공의 증거로 오인하지 않는다. 실패하면 원래 파일을 보존한다.
+        with tempfile.TemporaryDirectory(prefix="pdf-", dir=os.path.dirname(out)) as d:
+            candidate = Path(d) / "render.pdf"
+            try:
+                r = subprocess.run(
+                    [CHROME, "--headless", "--disable-gpu", "--no-sandbox",
+                     "--virtual-time-budget=25000", "--no-pdf-header-footer",
+                     f"--print-to-pdf={candidate}", f"http://127.0.0.1:{pr.port}/{name}"],
+                    capture_output=True, text=True, timeout=90)
+            except (subprocess.TimeoutExpired, OSError) as exc:
+                raise SystemExit(f"PDF 렌더 실행 실패: {exc}") from exc
+            if r.returncode or not candidate.is_file() or not candidate.read_bytes().startswith(b"%PDF-"):
+                raise SystemExit("PDF 를 못 만들었다:\n" + r.stderr[-800:])
+            os.replace(candidate, out)
         print(f"  {out}")
     finally:
         pr.close()
