@@ -32,11 +32,11 @@ git add -A && git commit && git push
 ## 채움률 — 재기와 고치기
 
 ```bash
-./sync/fontcache.sh                  # 처음 한 번. 측정용 Noto TTF 3개
 ./sync/fit.sh     내문서.dc.html      # 쪽을 다시 나눠 채운다 (원본은 .bak)
 ./sync/fit.sh --dry 내문서.dc.html    # 고치지 않고 결과만
 ./sync/measure.sh 내문서.dc.html      # 재기만 한다
-./sync/topdf.sh   내문서.dc.html      # 확인용 PDF
+./sync/orphan.sh  내문서.dc.html      # 외톨이 줄 (마지막 줄에 한 단어·한 글자)
+./sync/topdf.sh   내문서.dc.html      # 확인용 PDF (아무것도 주입하지 않는다)
 ```
 
 헤드리스 크롬으로 실제 렌더한 뒤 잰다. npm 의존성은 없다.
@@ -58,8 +58,10 @@ git add -A && git commit && git push
    동안 `width:210mm!important` 로 고정한다.
 2. **한글 웹폰트는 유니코드 구간별로 100개 넘게 쪼개져 지연 로딩된다.**
    `document.fonts.ready` 가 그보다 먼저 풀려 대체 글꼴로 재게 되고, 같은
-   문장이 6.4% 좁게 잡힌다. `fontcache.sh` 가 받아 둔 로컬 TTF 를 물리고,
-   프로브가 실제로 앉았는지 폭을 비교해 확인한다.
+   문장이 6.4% 좁게 잡힌다. 그래서 재는 동안은 맥에 설치된 Pretendard TTF
+   (`~/Library/Fonts`) 를 물리고, 프로브가 실제로 앉았는지 폭을 비교해 확인한다.
+   내려받는 글꼴 캐시(`fontcache.sh`)는 2026-09-10 에 없앴다 — Pretendard 는
+   Google Fonts 에 없고, 설치본이 있으면 받을 이유가 없다.
 3. **본문크기·줄간은 네 군데에 적혀 있다.** `@property` 의 `initial-value` 둘은
    로컬 렌더·PDF 를, 문서 끝 x-dc 의 `data-props` 기본값과 `renderVals` 의
    `?? 14` 는 Claude Design 안의 `{{ bodyFs }}` 를 정한다. 앞의 둘만 고치면
@@ -101,32 +103,27 @@ DesignSync 는 `list_files` → `finalize_plan` → `write_files` 순서로 돈�
 | `_ds_manifest.json` · `_ds_bundle.js` | 앱이 자체 점검으로 생성한다 |
 | `.thumbnail` · `thumbnail.html` | 앱이 만든 미리보기 |
 
-올릴 것은 `readme.md` · `styles.css` · `templates/{report,formal,brief}/*` 뿐이고,
+올릴 것은 `readme.md` · `styles.css` · `templates/report/*` 와 **이 시스템이 올리는
+유일한 자산인** `fonts/Pretendard-{Regular,Medium,Bold}.ttf` 뿐이고,
 그중에서도 **실제로 바뀐 것만 올린다.** 올리기 전에 `get_file` 로 원격본을 읽어
 `build/design/` 과 대조한다 — 누군가 Claude Design 편집기에서 손댔을 수 있고,
 그걸 모르고 덮어쓰면 그 수정이 조용히 사라진다.
 
-## 폰트 참조는 두 파일에서 바뀐다
+## 폰트 참조는 치환하지 않는다
 
-`.dc.html` 만 치환하면 안 된다. `styles.css` 도 폰트 참조가 다르고, 경로도 다르다.
+저장소본과 Claude Design본이 **같은 줄**을 쓴다.
 
-| 파일 | 저장소본 | Claude Design본 |
-|---|---|---|
-| `templates/*.dc.html` | `<link>` 3줄 | `@font-face` … `../../fonts/…` |
-| `styles.css` | `@import url(…)` | `@font-face` … `fonts/…` |
+```css
+@font-face{font-family:'Pretendard';font-weight:400;font-style:normal;font-display:swap;
+  src:local('Pretendard'),url('../../fonts/Pretendard-Regular.ttf') format('truetype')}
+```
 
-`.dc.html` 은 `templates/<이름>/` 안에, `styles.css` 는 프로젝트 루트에 놓이므로
-`fonts/` 로 올라가는 깊이가 다르다. `fontswap.py` 가 확장자를 보고 갈라 처리한다.
+`local('Pretendard')` 가 먼저라 맥에서는 설치본이 쓰이고(네트워크도 다운로드도
+없다), 설치본이 없는 환경에서만 프로젝트 `fonts/` 의 TTF 로 떨어진다. 경로는
+Claude Design 배치 기준이다 — `.dc.html` 은 `templates/report/` 안, `styles.css` 는
+루트에 놓이므로 각각 `../../fonts/` 와 `fonts/` 다.
 
-## 왜 변형이 두 종류인가
-
-폰트 참조만 다르다.
-
-| | 폰트 | 이유 |
-|---|---|---|
-| 원본 · 스킬 · GitHub | Google Fonts `<link>` | 폰트 파일 없이 어디서나 열린다 |
-| Claude Design | 로컬 TTF `@font-face` | 웹폰트 로딩 실패 시 줄바꿈이 달라지는 사고를 원천 차단 |
-
-`sync/fontswap.py` 가 이 치환을 한다. 기대한 `<link>` 줄을 못 찾으면
-**조용히 넘어가지 않고 죽는다** — 치환만 실패해서 Claude Design 쪽 폰트가
-슬그머니 웹폰트로 돌아가는 것이 막으려는 사고다.
+예전에는 `sync/fontswap.py` 가 저장소본(Google Fonts `<link>`) → Claude Design본
+(로컬 TTF `@font-face`) 치환을 했다. **2026-09-10 에 없앴다** — 원본과 업로드본이
+서로 다른 파일이 되어, 한쪽만 고쳐 놓고 고쳤다고 착각하는 사고의 원인이었다.
+Pretendard 는 Google Fonts 에 없어 `<link>` 경로가 아예 없기도 하다.

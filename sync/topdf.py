@@ -29,10 +29,11 @@ def main():
     try:
         html = open(src, encoding="utf-8").read()
         html = re.sub(r'<link[^>]*fonts\.(?:googleapis|gstatic)\.com[^>]*>', "", html)
-        # 흐름 문서는 용지를 못 박지 않는다 — 인쇄 대화상자의 용지를 따른다.
-        # 헤드리스 크롬은 기본이 Letter(A4보다 18mm 짧다)라 그대로 뽑으면
-        # 쪽수가 실제와 달라진다. 확인용 PDF 는 A4 로 고정해 뽑는다.
-        tag = "<style>@page{size:A4}</style>\n" + pr.local_fonts()
+        # 용지는 주입하지 않는다. 고정 쪽(section.page)에서는 doc-page.js 가
+        # @page 에 size: 210mm 297mm 를 직접 쓰므로(doc-page.js:559-565),
+        # 주입하면 도구가 서식을 대신 고쳐 주는 셈이 되어 서식의 결함을 숨긴다.
+        # 글꼴만 로컬로 물린다 — 측정과 같은 조건을 만들기 위해서다.
+        tag = pr.local_fonts()
         html = html.replace("</body>", tag + "</body>", 1) if "</body>" in html else html + tag
         name = "__pdf__.dc.html"
         with open(os.path.join(pr.work, name), "w", encoding="utf-8") as f:

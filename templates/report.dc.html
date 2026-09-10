@@ -10,15 +10,23 @@
 <!-- @template name="검토보고서" description="개조식 기호 위계로 배경·현황·대응방안·조치를 정리하는 내부검토 보고서 뼈대" -->
 <helmet>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-  /* 용지 — A4 고정. 흐름 문서는 doc-page.js 가 @page 에 용지를 쓰지 않아
-     (설계상 의도) 크롬 기본값 Letter 로 떨어진다. A4보다 18mm 짧아 쪽이
-     엉뚱한 데서 나뉜다. size 디스크립터는 doc-page.js 가 비워 두는 자리라
-     충돌하지 않는다 — margin 은 그쪽 것이 그대로 적용된다. 지우지 말 것. */
-  @page { size: A4; }
+  /* 글꼴 — Pretendard. local() 이 먼저다. 맥에 설치돼 있으면 그것을 쓰고
+     (네트워크도 다운로드도 없다), 없는 환경에서만 프로젝트 fonts/ 의 TTF 로
+     떨어진다. 경로는 Claude Design 배치 기준이다(templates/report/ 안에
+     놓이므로 ../../fonts/). Pretendard 는 Google Fonts 에 없어서 웹폰트
+     <link> 를 쓸 수 없다 — 이 @font-face 가 유일한 경로다. */
+  @font-face{font-family:'Pretendard';font-weight:400;font-style:normal;font-display:swap;
+    src:local('Pretendard'),url('../../fonts/Pretendard-Regular.ttf') format('truetype')}
+  @font-face{font-family:'Pretendard';font-weight:500;font-style:normal;font-display:swap;
+    src:local('Pretendard Medium'),url('../../fonts/Pretendard-Medium.ttf') format('truetype')}
+  @font-face{font-family:'Pretendard';font-weight:700;font-style:normal;font-display:swap;
+    src:local('Pretendard Bold'),url('../../fonts/Pretendard-Bold.ttf') format('truetype')}
+  /* 용지 — A4. 고정 쪽(section.page) 방식에서는 doc-page.js 가 @page 에
+     size: 210mm 297mm 를 직접 못 박는다(doc-page.js:559-565 — <head> 에
+     마지막으로 주입돼 다른 @page 규칙보다 우선한다). 그래서 이 서식은
+     @page 를 쓰지 않는다. size="a4" 속성 하나가 화면 쪽 카드와 인쇄 용지를
+     동시에 결정한다 — 그 속성을 지우면 Letter 로 떨어진다. */
   /* 조판 변수 등록 — 속성 패널 바인딩(bodyFs·bodyLh)이 해결되지 않아
      `--body-fs: px` 같은 무효값이 들어와도 var() 폴백은 발동하지 않고
      상속값(16px/normal)으로 튄다. @property의 initial-value가 그때
@@ -31,7 +39,7 @@
     --band:#f6f4ef;
     --rule:#dcd7cd; --rule-soft:#e2ddd3; --rule-strong:#cec9be; --rule-hair:#ddd8ce;
     --link:#2c4a6e; --link-hover:#16324f;
-    --sans:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;
+    --sans:'Pretendard','Apple SD Gothic Neo',-apple-system,sans-serif;
   }
   html{ font-family:var(--sans); }
   body{ margin:0; }
@@ -40,13 +48,28 @@
             color:var(--ink); letter-spacing:-0.015em; }
   a{ color:var(--link); } a:hover{ color:var(--link-hover); }
 
-  /* ── 지면 — 흐름 문서. 쪽은 브라우저 인쇄 엔진이 나눈다 ───────────
-     원고를 그냥 부으면 된다. 쪽을 손으로 나누지 않는다.
-     여백은 doc-page 의 margin 속성이 소유한다. */
-  /* 쪽 넘김 위생 — 제목은 뒤 내용과 붙이고, 덩어리는 쪼개지 않는다 */
-  h1,h2,h3{ break-after:avoid; }
-  .band,.quote{ break-inside:avoid; }
-  tr,img{ break-inside:avoid; }
+  /* ── 지면 — section.page 한 장 = A4 한 장 ──────────────────────
+     화면(Claude Design 캔버스)에도 A4 쪽 카드로 한 장씩 뜬다.
+     쪽은 채워서 넘긴다 — 제목마다 새 쪽으로 넘기지 않고, 「(계속)」 같은
+     제목을 만들지 않으며, 쪽을 일부러 비우지 않는다(STYLE.md 합격 기준).
+     쪽 박스를 넘치는 내용은 잘린다. 화면에서 그 자리가 바로 보이니,
+     그때 section.page 를 하나 늘려 이어 붓는다.
+     여백은 .page 의 padding 이 소유한다(doc-page 의 margin 은 무효). */
+  .page{ padding:19mm 20mm 14mm; box-sizing:border-box;
+         display:flex; flex-direction:column; }
+  .body{ flex:1; min-height:0; }
+
+  /* ── 줄바꿈 — 한 단어·한 글자가 외톨이로 떨어지지 않게 ──────────
+     word-break:keep-all  어절 중간을 쪼개지 않는다(한글 기본 줄바꿈은
+                          글자 단위라 「부산공동어시」/「장」 으로 끊긴다).
+     text-wrap:pretty     마지막 줄에 한 단어만 남는 것을 줄바꿈을 다시
+                          계산해 막는다. 제목은 balance 로 단 수를 고른다.
+     hanging-punctuation  줄 끝 마침표·쉼표를 여백으로 흘려 한 글자가
+                          다음 줄로 넘어가는 것을 막는다.
+     nbsp 는 쓰지 않는다 — 원고를 고치지 않고 서식만으로 잡는다. */
+  .o,.k,.t,.n,.r,.lead,.quote,td,th{
+      word-break:keep-all; text-wrap:pretty; hanging-punctuation:allow-end; }
+  h1,h2,h3{ text-wrap:balance; }
   .o,.k,.t,.n,.r,.lead{ orphans:2; widows:2; }
 
   /* ── 표제 위계 (§8.3) ───────────────────────────── */
@@ -83,7 +106,9 @@
   td.num{ text-align:right; }
   thead th{ text-align:center; }
 
-  /* ── 푸터 — slot="footer" 로 넣는다. 매 쪽 아래에 반복된다 ── */
+  /* ── 푸터 — .page 안 맨 아래. 쪽마다 하나씩 직접 넣는다 ──────────
+     slot="footer" 를 쓰지 않는다. 그건 흐름 문서용이고 고정 쪽과 혼용이
+     금지되어 있다. 오른쪽은 1 / N 쪽 번호 — 쪽을 늘리면 N 도 고친다. */
   .foot{ display:flex; justify-content:space-between; align-items:baseline; padding-top:6px;
          border-top:0.6px solid var(--rule-hair); font-size:9.5px; letter-spacing:0.02em;
          color:var(--muted); }
@@ -92,7 +117,10 @@
 <script src="./doc-page.js"></script>
 </helmet>
 
-<doc-page size="a4" margin="20mm" style="--body-fs: {{ bodyFs }}px; --body-lh: {{ bodyLh }}">
+<doc-page size="a4" margin="0" style="--body-fs: {{ bodyFs }}px; --body-lh: {{ bodyLh }}">
+
+<section class="page">
+ <div class="body">
   <div class="kicker">재무기획팀 내부검토</div>
   <h1>[문서 제목을 여기에 넣는다]</h1>
   <div class="rule86"></div>
@@ -129,8 +157,9 @@
   <div class="quote">
     <strong>내부 메모</strong> — [보고서에는 남기되 대외로는 나가지 않을 사항]
   </div>
-
-<div slot="footer" class="foot"><span>[문서명]</span><span>부산공동어시장</span></div>
+  </div>
+  <div class="foot"><span>[문서명]</span><span>1 / 1</span></div>
+</section>
 </doc-page>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{

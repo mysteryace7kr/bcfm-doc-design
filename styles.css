@@ -2,7 +2,14 @@
    각 .dc.html의 <helmet> :root 블록과 같은 값이다.
    값을 바꿀 때는 이 파일과 해당 컴포넌트의 :root를 함께 고친다. */
 
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+/* 글꼴 — Pretendard. local() 이 먼저라 맥에 설치돼 있으면 그것을 쓴다.
+   경로는 Claude Design 프로젝트 루트 기준이다(fonts/). */
+@font-face{font-family:'Pretendard';font-weight:400;font-style:normal;font-display:swap;
+  src:local('Pretendard'),url('fonts/Pretendard-Regular.ttf') format('truetype')}
+@font-face{font-family:'Pretendard';font-weight:500;font-style:normal;font-display:swap;
+  src:local('Pretendard Medium'),url('fonts/Pretendard-Medium.ttf') format('truetype')}
+@font-face{font-family:'Pretendard';font-weight:700;font-style:normal;font-display:swap;
+  src:local('Pretendard Bold'),url('fonts/Pretendard-Bold.ttf') format('truetype')}
 
 :root{
   /* 잉크 — 본문 위계 */
@@ -25,13 +32,12 @@
   --link:       #2c4a6e;
   --link-hover: #16324f;
 
-  /* 서체 — 제목·본문 모두 고딕 하나로 통일 (§8.2)
-     Serif는 쓰지 않는다. fonts/ 의 Serif TTF는 보존만 되어 있다. */
-  --sans: 'Noto Sans KR','Apple SD Gothic Neo',sans-serif; /* @kind font */
+  /* 서체 — Pretendard 하나로 통일. 제목도 본문도 같은 글꼴이다.
+     Serif는 쓰지 않는다. fonts/ 의 Noto TTF는 앱 소유라 보존만 되어 있다. */
+  --sans: 'Pretendard','Apple SD Gothic Neo',-apple-system,sans-serif; /* @kind font */
 
-  /* 본문 조판 — 컴포넌트 속성 패널에서 조절한다 (§8.2)
-     report·brief 14px / 1.85  (12.5~15.5 · 1.70~2.00)
-     formal      13.5px / 1.75 (12.0~15.0 · 1.60~1.90) */
+  /* 본문 조판 — 속성 패널 슬라이더로 조절한다 (§8.2)
+     보고서 14px / 1.85 (12.5~15.5 · 1.70~2.00) */
   --body-fs: 14px;
   --body-lh: 1.85; /* @kind other */
 

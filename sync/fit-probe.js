@@ -237,7 +237,7 @@
 
   /* 글꼴이 실제로 앉았는지 확인한다. 대체 글꼴로 재면 같은 문장이 6% 남짓
    * 좁게 잡혀 줄바꿈이 달라진다 — 잰 값이 인쇄와 어긋나는 원인이다.
-   * 같은 문장을 'Noto Sans KR' 과 없는 글꼴로 각각 재서 폭이 같으면 안 앉은 것. */
+   * 같은 문장을 'Pretendard' 와 없는 글꼴로 각각 재서 폭이 같으면 안 앉은 것. */
   const SAMPLE = '부산공동어시장 재무기획팀 인쇄문서 디자인 시스템';
 
   function span(family) {
@@ -250,7 +250,7 @@
   }
 
   function fontCheck() {
-    const a = span("'Noto Sans KR'");
+    const a = span("'Pretendard'");
     const b = span("'__no_such_font__'");
     const wa = a.getBoundingClientRect().width;
     const wb = b.getBoundingClientRect().width;
@@ -265,7 +265,7 @@
     if (!document.fonts) return Promise.resolve();
     const txt = '부산공동어시장 재무기획팀 가나다라 0123';
     const jobs = [400, 500, 700].map(function (w) {
-      try { return document.fonts.load(w + " 14px 'Noto Sans KR'", txt); }
+      try { return document.fonts.load(w + " 14px 'Pretendard'", txt); }
       catch (e) { return Promise.resolve(); }
     });
     /* 어느 한 약속이라도 안 풀리면 영영 안 재게 되므로 시간을 걸어 둔다. */

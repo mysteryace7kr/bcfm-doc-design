@@ -184,16 +184,19 @@ class Prober:
                 raise SystemExit(f"런타임을 못 찾았다: {f}")
         shutil.copy(os.path.join(repo, "sync", "fit-probe.js"), self.work)
 
-        cache = os.path.join(repo, "sync", ".fontcache")
+        # 측정용 글꼴 — 맥에 설치된 Pretendard 를 그대로 쓴다. 내려받지 않는다.
+        # 네트워크 웹폰트는 헤드리스 크롬에서 제때 안 앉아 대체 글꼴로 재는 사고가
+        # 난다(같은 문장이 6% 좁게 잡혀 줄바꿈이 달라진다). 로컬 TTF 로 막는다.
+        WEIGHT = {400: "Regular", 500: "Medium", 700: "Bold"}
         self.fonts = []
-        for w in (400, 500, 700):
-            src = os.path.join(cache, f"NotoSansKR-{w}.ttf")
+        for w, style in WEIGHT.items():
+            src = os.path.expanduser(f"~/Library/Fonts/Pretendard-{style}.ttf")
             if os.path.exists(src):
-                shutil.copy(src, self.work)
+                shutil.copy(src, os.path.join(self.work, f"Pretendard-{w}.ttf"))
                 self.fonts.append(w)
         if len(self.fonts) != 3:
-            raise SystemExit("측정용 글꼴이 없다. 먼저 "
-                             + os.path.join(repo, "sync", "fontcache.sh") + " 를 돌려라.")
+            raise SystemExit("측정용 글꼴이 없다 — Pretendard Regular·Medium·Bold 를 "
+                             "맥에 설치해야 한다(~/Library/Fonts).")
 
         s = socket.socket()
         s.bind(("127.0.0.1", 0))
@@ -216,8 +219,8 @@ class Prober:
 
     def local_fonts(self):
         return "<style>" + "".join(
-            f"@font-face{{font-family:'Noto Sans KR';font-style:normal;"
-            f"font-weight:{w};src:url(./NotoSansKR-{w}.ttf) format('truetype');"
+            f"@font-face{{font-family:'Pretendard';font-style:normal;"
+            f"font-weight:{w};src:url(./Pretendard-{w}.ttf) format('truetype');"
             f"font-display:block}}" for w in self.fonts) + "</style>\n"
 
     def probe(self, html, fs=None, lh=None, splits=None):
