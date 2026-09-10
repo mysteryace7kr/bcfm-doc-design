@@ -47,7 +47,7 @@
   --track-h2:   -0.02em;
   --track-h3:   -0.02em;
 
-  /* 지면 — 상 / 좌우 / 하 (§8.4) */
+  /* 이전 고정 쪽 문서 전용. 현재 흐름 서식은 doc-page margin="20mm" 사용. */
   --page-pad-top:    19mm;
   --page-pad-side:   20mm;
   --page-pad-bottom: 14mm;

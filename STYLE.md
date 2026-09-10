@@ -123,6 +123,14 @@ A4 297mm에서 위 19mm·아래 14mm 여백과 푸터(약 6mm)를 뺀 **본문 �
 | `word-break: keep-all` | 어절 중간을 쪼개지 않는다 |
 | `text-wrap: pretty` | 마지막 줄에 한 단어만 남으면 줄바꿈을 다시 계산한다 |
 | `hanging-punctuation: allow-end` | 줄 끝 마침표·쉼표를 여백으로 흘려 한 글자가 넘어가는 것을 막는다 |
+| `line-break: strict` | 금칙처리를 엄격하게 — 줄 끝·줄머리에 오면 안 되는 글자를 넘긴다 |
+| `overflow-wrap: anywhere` | 한 줄보다 긴 주소·식별자가 지면 폭을 밀어내는 것을 막는 예외 |
+
+짧은 날짜·금액처럼 의미상 떼면 안 되는 단위에는 `.keep-phrase`(`white-space:nowrap`)
+를 쓴다. 긴 문장이나 표 셀 전체에는 쓰지 않는다.
+
+**`text-wrap: pretty` 는 브라우저의 최적화이지 보장이 아니다.** 모든 고립이 사라진다고
+설명하지 않는다 — 그래서 아래 `orphan.sh` 로 실제 렌더를 재서 확인한다.
 
 제목(`h1`·`h2`·`h3`)은 `text-wrap: balance` 로 단 수를 고르게 잡는다.
 

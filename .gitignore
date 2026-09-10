@@ -6,3 +6,6 @@ build/
 # 사내 작업메모 사본. 원본은 옵시디언 볼트에 있다 (notes/README 참조)
 notes/
 .fontcache/
+
+# Python 검증 중 생성되는 바이트코드
+__pycache__/

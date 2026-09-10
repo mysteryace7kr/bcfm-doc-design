@@ -18,6 +18,7 @@ for stale in components/formal.dc.html components/brief.dc.html \
   [ -e "$DST/$stale" ] && rm -rf "$DST/$stale" && echo "  지움: $stale"
 done
 
+cp "$SRC/sync/README.md"         "$DST/sync/README.md"
 cp "$SRC/docs/SKILL.md"          "$DST/SKILL.md"
 cp "$SRC/STYLE.md"               "$DST/STYLE.md"
 cp "$SRC/templates/"*.dc.html    "$DST/components/"
