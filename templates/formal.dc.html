@@ -38,11 +38,22 @@
   /* ── 지면 — 흐름 문서. 쪽은 브라우저 인쇄 엔진이 나눈다 ───────────
      원고를 그냥 부으면 된다. 쪽을 손으로 나누지 않는다.
      여백은 doc-page 의 margin 속성이 소유한다. */
-  /* 쪽 넘김 위생 — 제목은 뒤 내용과 붙이고, 덩어리는 쪼개지 않는다 */
-  h1,h2,h3{ break-after:avoid; }
-  .band,.quote{ break-inside:avoid; }
-  tr,img{ break-inside:avoid; }
-  .o,.k,.t,.n,.r,.lead{ orphans:2; widows:2; }
+  /* BCFM의 출력 계약은 A4. 여백은 런타임 한 곳에서만 관리한다. */
+  @page{ size:A4; }
+  doc-page{ word-break:keep-all; line-break:strict; overflow-wrap:anywhere; }
+  /* 제목·표제 장식은 뒤 내용과 유지. 본문·긴 표·긴 인용은 흐르게 한다. */
+  h1,h2,h3,h4,.kicker,.rule86{ break-after:avoid-page; }
+  doc-page p,doc-page li,.quote{ orphans:2; widows:2; text-wrap:pretty; }
+  .band,.card,.keep-together,.signature,.approval{ break-inside:avoid-page; }
+  .quote,.allow-split{ break-inside:auto; }
+  /* 서로 다른 한 줄 문단에는 widows/orphans가 작동하지 않는다. */
+  .quote > p:first-child{ break-after:avoid-page; }
+  .quote > p:last-child{ break-before:avoid-page; }
+  tr,img{ break-inside:avoid-page; }
+  thead{ display:table-header-group; }
+  /* 의미상 떼면 안 되는 짧은 단위만 사용. 긴 문장에는 사용하지 않는다. */
+  .keep-phrase{ white-space:nowrap; }
+  img,svg{ max-width:100%; }
 
   /* ── 표제 위계 (§8.3) ───────────────────────────── */
   .kicker{ font-size:10.5px; font-weight:500; letter-spacing:0.34em; color:var(--muted); text-align:center; }
@@ -78,7 +89,7 @@
   td.num{ text-align:right; }
   thead th{ text-align:center; }
 
-  /* ── 푸터 — 각 페이지 안에 직접 넣는다 (§8.3) ────── */
+  /* ── 푸터 — slot="footer"로 매 쪽 반복 (§8.3) ────── */
   .foot{ display:flex; justify-content:space-between; align-items:baseline; padding-top:6px;
          border-top:0.6px solid var(--rule-hair); font-size:9.5px; letter-spacing:0.02em;
          color:var(--muted); }
@@ -110,12 +121,12 @@
   <p class="lead">3. [마무리 문장]  &nbsp;&nbsp;<strong>끝.</strong></p>
 
   <h2>결재</h2>
-  <table>
+  <table class="approval">
     <thead><tr><th style="width:25%">담당</th><th style="width:25%">팀장</th><th style="width:25%">상무이사</th><th style="width:25%">대표이사</th></tr></thead>
     <tbody><tr><td style="height:52px"></td><td></td><td></td><td></td></tr></tbody>
   </table>
 
-  <div style="margin:30px 0 0;text-align:center">
+  <div class="signature" style="margin:30px 0 0;text-align:center">
     <div style="font-size:20px;font-weight:700;letter-spacing:-0.03em;color:var(--ink-strong)">[발신명의]</div>
     <div style="margin-top:6px;font-size:12px;color:var(--muted)">[주소] &nbsp;·&nbsp; 전화 [번호]</div>
     <div style="margin-top:4px;font-size:12px;color:var(--muted)">[문서번호] &nbsp;·&nbsp; [시행일] 시행</div>
