@@ -9,9 +9,16 @@ echo "── 스킬 폴더 ($SKILL)"
 if [ ! -d "$SKILL" ]; then
   echo "   없음"; rc=1
 else
-  for f in report formal brief; do
-    diff -q "$SRC/templates/$f.dc.html" "$SKILL/components/$f.dc.html" >/dev/null 2>&1 \
-      || { echo "   어긋남: $f.dc.html"; rc=1; }
+  # 서식 목록을 박아 두지 않는다 — 폐기한 서식을 계속 찾던 사고가 있었다.
+  for src in "$SRC"/templates/*.dc.html; do
+    f="$(basename "$src")"
+    diff -q "$src" "$SKILL/components/$f" >/dev/null 2>&1 \
+      || { echo "   어긋남: $f"; rc=1; }
+  done
+  # 원본에 없는데 사본에 남아 있는 서식 — to-skill.sh 가 지우지 못한 것
+  for cp in "$SKILL"/components/*.dc.html; do
+    f="$(basename "$cp")"
+    [ -f "$SRC/templates/$f" ] || { echo "   사본에만 있음(폐기 누락): $f"; rc=1; }
   done
   for f in doc-page.js support.js; do
     diff -q "$SRC/runtime/$f" "$SKILL/components/$f" >/dev/null 2>&1 \
@@ -19,6 +26,7 @@ else
   done
   diff -q "$SRC/docs/SKILL.md" "$SKILL/SKILL.md" >/dev/null 2>&1 || { echo "   어긋남: SKILL.md"; rc=1; }
   diff -q "$SRC/STYLE.md"     "$SKILL/STYLE.md" >/dev/null 2>&1 || { echo "   어긋남: STYLE.md"; rc=1; }
+  diff -q "$SRC/sync/README.md" "$SKILL/sync/README.md" >/dev/null 2>&1 || { echo "   어긋남: sync/README.md"; rc=1; }
   [ $rc -eq 0 ] && echo "   일치"
 fi
 
