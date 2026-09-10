@@ -14,6 +14,11 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
+  /* 용지 — A4 고정. 흐름 문서는 doc-page.js 가 @page 에 용지를 쓰지 않아
+     (설계상 의도) 크롬 기본값 Letter 로 떨어진다. A4보다 18mm 짧아 쪽이
+     엉뚱한 데서 나뉜다. size 디스크립터는 doc-page.js 가 비워 두는 자리라
+     충돌하지 않는다 — margin 은 그쪽 것이 그대로 적용된다. 지우지 말 것. */
+  @page { size: A4; }
   /* 조판 변수 등록 — 속성 패널 바인딩(bodyFs·bodyLh)이 해결되지 않아
      `--body-fs: px` 같은 무효값이 들어와도 var() 폴백은 발동하지 않고
      상속값(16px/normal)으로 튄다. @property의 initial-value가 그때
@@ -78,7 +83,7 @@
   td.num{ text-align:right; }
   thead th{ text-align:center; }
 
-  /* ── 푸터 — 각 페이지 안에 직접 넣는다 (§8.3) ────── */
+  /* ── 푸터 — slot="footer" 로 넣는다. 매 쪽 아래에 반복된다 ── */
   .foot{ display:flex; justify-content:space-between; align-items:baseline; padding-top:6px;
          border-top:0.6px solid var(--rule-hair); font-size:9.5px; letter-spacing:0.02em;
          color:var(--muted); }
